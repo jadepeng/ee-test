@@ -7,7 +7,7 @@ import json
 import numpy as np
 from bert4keras.backend import keras, K
 from bert4keras.models import build_transformer_model
-from tokenutil import Tokenizer
+from bert4keras.tokenizers import Tokenizer
 from bert4keras.optimizers import Adam
 from bert4keras.snippets import sequence_padding, DataGenerator
 from bert4keras.snippets import open
@@ -49,8 +49,8 @@ def load_data(filename):
 
 
 # 读取数据
-train_data = load_data('data/train.json')
-valid_data = load_data('data/dev.json')
+# train_data = load_data('data/train.json')
+# valid_data = load_data('data/dev.json')
 
 # 读取schema
 with open('data/event_schema.json', encoding='utf-8') as f:
@@ -113,6 +113,17 @@ model = build_transformer_model(
     model='albert'
 )
 
+
+def bert_encoder(text):
+    tokens = tokenizer.tokenize(text)
+    while len(tokens) > 510:
+        tokens.pop(-2)
+    token_ids = tokenizer.tokens_to_ids(tokens)
+    segment_ids = [0] * len(token_ids)
+    return model.predict([[token_ids], [segment_ids]])
+
+print(bert_encoder('你好，你是我的小苹果')[0].shape)
+
 output = Dense(num_labels)(model.output)
 CRF = ConditionalRandomField(lr_multiplier=crf_lr_multiplier)
 output = CRF(output)
@@ -125,6 +136,8 @@ model.compile(
     optimizer=Adam(learning_rate),
     metrics=[CRF.sparse_accuracy]
 )
+
+
 
 
 def viterbi_decode(nodes, trans):
