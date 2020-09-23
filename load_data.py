@@ -53,4 +53,4 @@ def label2id(train_file_path, label2id_path):
 
 
 if __name__ == '__main__':
-    label2id("aimind-ner-bio.txt", "label2id.json")
+    label2id("data/train-bio.txt", "baidu-event_label2id.json")
